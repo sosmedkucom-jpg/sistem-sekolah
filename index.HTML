@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Informasi Sekolah</title>
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/index.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #dbeafe;
+            --secondary: #0f172a; --success: #16a34a; --success-light: #dcfce7;
+            --warning: #d97706; --warning-light: #fef3c7; --danger: #dc2626; --danger-light: #fee2e2;
+            --info: #0891b2; --info-light: #cffafe; --purple: #7c3aed; --purple-light: #ede9fe;
+            --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0; --gray-300: #cbd5e1;
+            --gray-400: #94a3b8; --gray-500: #64748b; --gray-600: #475569; --gray-700: #334155;
+            --gray-800: #1e293b; --gray-900: #0f172a; --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--gray-100); color:var(--gray-800); min-height:100vh; }
+        
+        .login-container { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#0891b2 100%); padding:20px; }
+        .login-box { background:white; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.3); width:100%; max-width:500px; overflow:hidden; animation:slideUp 0.6s ease; }
+        @keyframes slideUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+        .login-header { background:linear-gradient(135deg,#1e3a8a,#2563eb); padding:30px; text-align:center; color:white; }
+        .login-header i { font-size:48px; margin-bottom:10px; }
+        .login-header h1 { font-size:22px; font-weight:700; }
+        .login-header p { font-size:13px; opacity:0.9; margin-top:5px; }
+        .login-body { padding:30px; }
+        .portal-tabs { display:flex; gap:8px; margin-bottom:25px; }
+        .portal-tab { flex:1; padding:12px; border:2px solid var(--gray-200); border-radius:10px; text-align:center; cursor:pointer; transition:all 0.3s; font-size:12px; font-weight:600; background:white; }
+        .portal-tab i { display:block; font-size:20px; margin-bottom:4px; }
+        .portal-tab.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+        .portal-tab:hover { border-color:var(--primary); }
+        .form-group { margin-bottom:18px; }
+        .form-group label { display:block; font-size:13px; font-weight:600; color:var(--gray-700); margin-bottom:6px; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 14px; border:2px solid var(--gray-200); border-radius:10px; font-size:14px; font-family:'Inter',sans-serif; transition:border-color 0.3s; background:var(--gray-50); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--primary); background:white; }
+        .btn { padding:10px 20px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.3s; font-family:'Inter',sans-serif; display:inline-flex; align-items:center; gap:8px; }
+        .btn-primary { background:var(--primary); color:white; } .btn-primary:hover { background:var(--primary-dark); transform:translateY(-1px); box-shadow:var(--shadow-md); }
+        .btn-success { background:var(--success); color:white; } .btn-success:hover { background:#15803d; }
+        .btn-danger { background:var(--danger); color:white; } .btn-danger:hover { background:#b91c1c; }
+        .btn-warning { background:var(--warning); color:white; } .btn-warning:hover { background:#b45309; }
+        .btn-info { background:var(--info); color:white; } .btn-info:hover { background:#0e7490; }
+        .btn-purple { background:var(--purple); color:white; } .btn-purple:hover { background:#6d28d9; }
+        .btn-secondary { background:var(--gray-200); color:var(--gray-700); } .btn-secondary:hover { background:var(--gray-300); }
+        .btn-whatsapp { background:#25d366; color:white; } .btn-whatsapp:hover { background:#1da851; }
+        .btn-sm { padding:6px 12px; font-size:12px; border-radius:8px; }
+        .btn-block { width:100%; justify-content:center; padding:12px; }
+        .login-error { background:var(--danger-light); color:var(--danger); padding:10px; border-radius:8px; font-size:13px; margin-bottom:15px; display:none; }
+        .login-hint { margin-top:15px; padding:12px; background:var(--gray-50); border-radius:10px; font-size:11px; color:var(--gray-500); }
+
+        .app-container { display:flex; min-height:100vh; }
+        .sidebar { width:280px; background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%); color:white; position:fixed; height:100vh; overflow-y:auto; z-index:100; transition:transform 0.3s; }
+        .sidebar-header { padding:20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; }
+        .sidebar-header .logo-icon { width:45px; height:45px; background:linear-gradient(135deg,var(--primary),var(--info)); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+        .sidebar-header h2 { font-size:15px; font-weight:700; }
+        .sidebar-header small { font-size:11px; opacity:0.7; }
+        .sidebar-menu { padding:10px 0; }
+        .menu-category { padding:8px 20px; font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,0.4); font-weight:700; margin-top:10px; }
+        .menu-item { display:flex; align-items:center; gap:12px; padding:11px 20px; cursor:pointer; transition:all 0.3s; font-size:13px; font-weight:500; color:rgba(255,255,255,0.7); border-left:3px solid transparent; }
+        .menu-item:hover { background:rgba(255,255,255,0.05); color:white; }
+        .menu-item.active { background:rgba(37,99,235,0.2); color:white; border-left-color:var(--primary); }
+        .menu-item i { width:20px; text-align:center; font-size:15px; }
+        .sidebar-footer { padding:15px 20px; border-top:1px solid rgba(255,255,255,0.1); position:absolute; bottom:0; width:100%; }
+        .sidebar-footer .user-info { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+        .sidebar-footer .user-avatar { width:36px; height:36px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
+        .sidebar-footer .user-name { font-size:13px; font-weight:600; }
+        .sidebar-footer .user-role { font-size:11px; opacity:0.6; }
+        .btn-logout { width:100%; padding:8px; background:rgba(220,38,38,0.2); color:#fca5a5; border:1px solid rgba(220,38,38,0.3); border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; font-family:'Inter',sans-serif; transition:all 0.3s; }
+        .btn-logout:hover { background:rgba(220,38,38,0.4); color:white; }
+        
+        .main-content { margin-left:280px; flex:1; min-height:100vh; }
+        .topbar { background:white; padding:15px 25px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:18px; font-weight:700; color:var(--gray-800); }
+        .topbar-right { display:flex; align-items:center; gap:15px; }
+        .topbar-date { font-size:13px; color:var(--gray-500); }
+        .mobile-toggle { display:none; background:none; border:none; font-size:20px; cursor:pointer; color:var(--gray-700); }
+        .content-area { padding:25px; }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:25px; }
+        .stat-card { background:white; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); display:flex; align-items:center; gap:15px; transition:transform 0.3s,box-shadow 0.3s; }
+        .stat-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+        .stat-icon { width:55px; height:55px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+        .stat-icon.blue { background:var(--primary-light); color:var(--primary); } .stat-icon.green { background:var(--success-light); color:var(--success); }
+        .stat-icon.orange { background:var(--warning-light); color:var(--warning); } .stat-icon.red { background:var(--danger-light); color:var(--danger); }
+        .stat-icon.cyan { background:var(--info-light); color:var(--info); } .stat-icon.purple { background:var(--purple-light); color:var(--purple); }
+        .stat-info h3 { font-size:24px; font-weight:800; color:var(--gray-800); } .stat-info p { font-size:12px; color:var(--gray-500); font-weight:500; }
+
+        .chart-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(450px,1fr)); gap:20px; margin-bottom:25px; }
+        .chart-card { background:white; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+        .chart-card h3 { font-size:15px; font-weight:700; margin-bottom:15px; color:var(--gray-700); }
+        
+        .table-container { background:white; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+        .table-header { padding:18px 20px; border-bottom:1px solid var(--gray-200); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+        .table-header h3 { font-size:16px; font-weight:700; }
+        .table-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .search-box { padding:8px 14px; border:2px solid var(--gray-200); border-radius:8px; font-size:13px; font-family:'Inter',sans-serif; }
+        .search-box:focus { outline:none; border-color:var(--primary); }
+        table { width:100%; border-collapse:collapse; }
+        th { background:var(--gray-50); padding:12px 15px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--gray-500); border-bottom:2px solid var(--gray-200); }
+        td { padding:12px 15px; font-size:13px; border-bottom:1px solid var(--gray-100); color:var(--gray-700); }
+        tr:hover td { background:var(--gray-50); }
+        .badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; display:inline-block; }
+        .badge-success { background:var(--success-light); color:var(--success); } .badge-warning { background:var(--warning-light); color:var(--warning); }
+        .badge-danger { background:var(--danger-light); color:var(--danger); } .badge-info { background:var(--info-light); color:var(--info); }
+        .badge-primary { background:var(--primary-light); color:var(--primary); } .badge-purple { background:var(--purple-light); color:var(--purple); }
+
+        .modal-overlay { position:fixed; top:0;left:0; width:100%;height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; visibility:hidden; transition:all 0.3s; }
+        .modal-overlay.show { opacity:1; visibility:visible; }
+        .modal { background:white; border-radius:16px; width:90%; max-width:650px; max-height:90vh; overflow-y:auto; transform:scale(0.9); transition:transform 0.3s; }
+        .modal-overlay.show .modal { transform:scale(1); }
+        .modal-header { padding:20px 25px; border-bottom:1px solid var(--gray-200); display:flex; align-items:center; justify-content:space-between; }
+        .modal-header h3 { font-size:17px; font-weight:700; }
+        .modal-close { width:32px; height:32px; border:none; background:var(--gray-100); border-radius:8px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--gray-500); transition:all 0.3s; }
+        .modal-close:hover { background:var(--danger-light); color:var(--danger); }
+        .modal-body { padding:25px; } .modal-footer { padding:15px 25px; border-top:1px solid var(--gray-200); display:flex; justify-content:flex-end; gap:10px; }
+        
+        .toast-container { position:fixed; top:20px; right:20px; z-index:2000; }
+        .toast { background:white; border-radius:10px; padding:14px 20px; box-shadow:var(--shadow-lg); margin-bottom:10px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:500; animation:toastIn 0.4s ease; min-width:280px; }
+        @keyframes toastIn { from{opacity:0;transform:translateX(100px);} to{opacity:1;transform:translateX(0);} }
+        .toast-success { border-left:4px solid var(--success); } .toast-error { border-left:4px solid var(--danger); } .toast-info { border-left:4px solid var(--info); }
+
+        .page-section { display:none; } .page-section.active { display:block; animation:fadeIn 0.4s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+        .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
+        .form-grid .full-width { grid-column:span 2; }
+
+        .raport-card { background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:30px; margin-bottom:20px; }
+        .raport-header { text-align:center; border-bottom:3px double var(--gray-300); padding-bottom:20px; margin-bottom:20px; }
+        .raport-header h2 { font-size:20px; color:var(--gray-800); } .raport-header p { font-size:13px; color:var(--gray-500); }
+        
+        .absen-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+        .absen-btn { padding:8px; border:2px solid var(--gray-200); border-radius:8px; cursor:pointer; text-align:center; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; transition:all 0.3s; background:white; }
+        .absen-btn.hadir { border-color:var(--success); background:var(--success-light); color:var(--success); }
+        .absen-btn.sakit { border-color:var(--warning); background:var(--warning-light); color:var(--warning); }
+        .absen-btn.izin { border-color:var(--info); background:var(--info-light); color:var(--info); }
+        .absen-btn.alpa { border-color:var(--danger); background:var(--danger-light); color:var(--danger); }
+
+        .overlay-bg { display:none; position:fixed; top:0;left:0; width:100%;height:100%; background:rgba(0,0,0,0.4); z-index:99; }
+        .overlay-bg.show { display:block; }
+        .hidden { display:none !important; }
+        .table-responsive { overflow-x:auto; }
+        .empty-state { text-align:center; padding:50px 20px; color:var(--gray-400); }
+        .empty-state i { font-size:48px; margin-bottom:10px; }
+        .peringkat-row { display:flex; align-items:center; gap:15px; padding:12px 15px; border-bottom:1px solid var(--gray-100); }
+        .peringkat-row:nth-child(1) { background:linear-gradient(90deg,#fef3c7,white); }
+        .peringkat-num { width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px; }
+        .peringkat-row:nth-child(1) .peringkat-num { background:#fbbf24; color:#92400e; }
+        .peringkat-row:nth-child(2) .peringkat-num { background:#94a3b8; color:white; }
+        .peringkat-row:nth-child(3) .peringkat-num { background:#d97706; color:white; }
+
+        .period-tabs { display:flex; gap:5px; margin-bottom:20px; background:var(--gray-100); padding:4px; border-radius:10px; width:fit-content; flex-wrap:wrap; }
+        .period-btn { padding:8px 16px; border:none; background:transparent; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; font-family:'Inter',sans-serif; color:var(--gray-500); transition:all 0.3s; }
+        .period-btn.active { background:white; color:var(--primary); box-shadow:var(--shadow); }
+
+        .import-area { border:2px dashed var(--gray-300); border-radius:12px; padding:30px; text-align:center; cursor:pointer; transition:all 0.3s; background:var(--gray-50); }
+        .import-area:hover { border-color:var(--primary); background:var(--primary-light); }
+        .import-area i { font-size:36px; color:var(--gray-400); margin-bottom:10px; } .import-area p { font-size:13px; color:var(--gray-500); }
+
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); }
+            .main-content { margin-left:0; } .mobile-toggle { display:block; }
+            .chart-grid { grid-template-columns:1fr; } .form-grid { grid-template-columns:1fr; }
+            .form-grid .full-width { grid-column:span 1; }
+            .stats-grid { grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
+            .table-header { flex-direction:column; align-items:flex-start; }
+            .search-box { width:100%; }
+        }
+        .sidebar::-webkit-scrollbar { width:4px; } .sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:4px; }
+
+        @media print {
+            .sidebar,.topbar,.btn,.no-print,.mobile-toggle { display:none !important; }
+            .main-content { margin-left:0 !important; }
+            .content-area { padding:10px !important; }
+            body { background:white !important; }
+            .raport-card { box-shadow:none !important; border:2px solid #333; }
+            table { font-size:11px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- LOGIN -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fas fa-school"></i>
+                <h1 id="loginSchoolName">Sistem Informasi Sekolah</h1>
+                <p id="loginSchoolAddr">Silakan pilih portal untuk masuk</p>
+            </div>
+            <div class="login-body">
+                <div class="portal-tabs">
+                    <div class="portal-tab active" onclick="switchPortal('admin')"><i class="fas fa-user-shield"></i>Administrator</div>
+                    <div class="portal-tab" onclick="switchPortal('guru')"><i class="fas fa-chalkboard-teacher"></i>Guru</div>
+                    <div class="portal-tab" onclick="switchPortal('siswa')"><i class="fas fa-user-graduate"></i>Siswa</div>
+                </div>
+                <div class="login-error" id="loginError">Data login salah!</div>
+                
+                <!-- Admin & Guru: username+password -->
+                <div id="loginUP">
+                    <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="Username"></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Password"></div>
+                </div>
+                <!-- Siswa: nama+nis -->
+                <div id="loginNS" class="hidden">
+                    <div class="form-group"><label>NIS (Nomor Induk Siswa)</label><input type="text" id="loginNis" placeholder="Contoh: 2025001"></div>
+                    <div class="form-group"><label>Nama Lengkap</label><input type="text" id="loginNama" placeholder="Nama lengkap siswa"></div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+                <div class="login-hint" id="loginHint">
+                    <strong>Default:</strong> Admin: admin/admin123 | Guru: guru1/guru123 | Siswa (portal siswa: NIS+Nama)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="appContainer" class="app-container" style="display:none;">
+        <div class="overlay-bg" id="overlayBg" onclick="toggleSidebar()"></div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"><i class="fas fa-school"></i></div>
+                <div><h2 id="schoolNameSidebar">SMA Nusantara</h2><small id="portalLabel">Administrator</small></div>
+            </div>
+            <div class="sidebar-menu" id="sidebarMenu"></div>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div><div class="user-name" id="userName">Admin</div><div class="user-role" id="userRole"></div></div>
+                </div>
+                <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div style="display:flex;align-items:center;gap:15px;">
+                    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
+                <div class="topbar-right"><span class="topbar-date" id="currentDate"></span></div>
+            </div>
+            <div class="content-area" id="contentArea"></div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalContent"></div></div>
+
+<script>
+let currentPortal='admin', currentUser=null, currentPage='dashboard', chartStore={};
+
+const defaultData = {
+    settings: { schoolName:'SMA Nusantara', schoolAddress:'Jl. Pendidikan No. 123, Jakarta', schoolPhone:'(021) 1234567', schoolEmail:'info@smanusantara.sch.id', academicYear:'2025/2026', semester:'Genap' },
+    users: [
+        { id:'admin', password:'admin123', name:'Administrator', role:'admin', username:'admin' },
+        { id:'guru1', password:'guru123', name:'Budi Santoso, S.Pd', role:'guru', username:'guru1', teacherId:'T001' },
+        { id:'guru2', password:'guru123', name:'Siti Aminah, S.Pd', role:'guru', username:'guru2', teacherId:'T002' },
+    ],
+    students: [
+        { nis:'2025001', nama:'Ahmad Rizki', tempatLahir:'Jakarta', tanggalLahir:'2008-03-15', wali:'Budi Rizki', jenisKelamin:'L', telepon:'081234567890', tahun:'2025', kelas:'X-A' },
+        { nis:'2025002', nama:'Dewi Lestari', tempatLahir:'Bandung', tanggalLahir:'2008-07-22', wali:'Andi Lestari', jenisKelamin:'P', telepon:'081234567891', tahun:'2025', kelas:'X-A' },
+        { nis:'2025003', nama:'Fajar Pratama', tempatLahir:'Surabaya', tanggalLahir:'2008-01-10', wali:'Hendra Pratama', jenisKelamin:'L', telepon:'081234567892', tahun:'2025', kelas:'X-B' },
+        { nis:'2024001', nama:'Maya Sari', tempatLahir:'Yogyakarta', tanggalLahir:'2007-05-18', wali:'Rudi Sari', jenisKelamin:'P', telepon:'081234567893', tahun:'2024', kelas:'XI-A' },
+        { nis:'2024002', nama:'Roni Hermawan', tempatLahir:'Semarang', tanggalLahir:'2007-11-30', wali:'Agus Hermawan', jenisKelamin:'L', telepon:'081234567894', tahun:'2024', kelas:'XI-A' },
+        { nis:'2023001', nama:'Lina Marlina', tempatLahir:'Medan', tanggalLahir:'2006-09-05', wali:'Joko Marlina', jenisKelamin:'P', telepon:'081234567895', tahun:'2023', kelas:'XII-A' },
+    ],
+    teachers: [
+        { id:'T001', nigy:'G001', nama:'Budi Santoso, S.Pd', nmrHp:'081111111111', tahun:'2025', mapel:'Matematika' },
+        { id:'T002', nigy:'G002', nama:'Siti Aminah, S.Pd', nmrHp:'081111111112', tahun:'2025', mapel:'Bahasa Indonesia' },
+        { id:'T003', nigy:'G003', nama:'Ahmad Fauzi, M.Pd', nmrHp:'081111111113', tahun:'2024', mapel:'Fisika' },
+        { id:'T004', nigy:'G004', nama:'Ratna Dewi, S.Pd', nmrHp:'081111111114', tahun:'2025', mapel:'Kimia' },
+        { id:'T005', nigy:'G005', nama:'Doni Saputra, S.Pd', nmrHp:'081111111115', tahun:'2023', mapel:'Biologi' },
+    ],
+    subjects: [
+        { id:'MTK', nama:'Matematika', kode:'MTK', guruId:'T001', kelas:'X-A,X-B,XI-A' },
+        { id:'BIND', nama:'Bahasa Indonesia', kode:'BIND', guruId:'T002', kelas:'X-A,X-B,XI-A' },
+        { id:'FIS', nama:'Fisika', kode:'FIS', guruId:'T003', kelas:'XI-A,XI-B' },
+        { id:'KIM', nama:'Kimia', kode:'KIM', guruId:'T004', kelas:'X-A,XII-A' },
+        { id:'BIO', nama:'Biologi', kode:'BIO', guruId:'T005', kelas:'XII-A' },
+    ],
+    classes: [
+        { id:'X-A', nama:'X-A', tahun:'2025', wali:'Budi Santoso, S.Pd' },
+        { id:'X-B', nama:'X-B', tahun:'2025', wali:'Siti Aminah, S.Pd' },
+        { id:'XI-A', nama:'XI-A', tahun:'2024', wali:'Ahmad Fauzi, M.Pd' },
+        { id:'XI-B', nama:'XI-B', tahun:'2024', wali:'Ratna Dewi, S.Pd' },
+        { id:'XII-A', nama:'XII-A', tahun:'2023', wali:'Doni Saputra, S.Pd' },
+        { id:'XII-B', nama:'XII-B', tahun:'2023', wali:'Budi Santoso, S.Pd' },
+    ],
+    grades: [],
+    attendance: [],
+};
+
+function getData(){ const d=localStorage.getItem('sisData'); if(!d){ localStorage.setItem('sisData',JSON.stringify(defaultData)); return JSON.parse(JSON.stringify(defaultData)); } return JSON.parse(d); }
+function saveData(data){ localStorage.setItem('sisData',JSON.stringify(data)); }
+
+// LOGIN
+function switchPortal(p){
+    currentPortal=p;
+    document.querySelectorAll('.portal-tab').forEach((t,i)=>{
+        t.classList.toggle('active', (p==='admin'&&i===0)||(p==='guru'&&i===1)||(p==='siswa'&&i===2));
+    });
+    document.getElementById('loginError').style.display='none';
+    if(p==='siswa'){ document.getElementById('loginUP').classList.add('hidden'); document.getElementById('loginNS').classList.remove('hidden'); document.getElementById('loginHint').innerHTML='<strong>Login Siswa:</strong> Gunakan NIS dan Nama Lengkap Anda'; }
+    else { document.getElementById('loginUP').classList.remove('hidden'); document.getElementById('loginNS').classList.add('hidden'); document.getElementById('loginHint').innerHTML='<strong>Default:</strong> Admin: admin/admin123 | Guru: guru1/guru123'; }
+}
+
+function doLogin(){
+    const data=getData();
+    document.getElementById('loginSchoolName').textContent=data.settings.schoolName;
+    let user=null;
+    if(currentPortal==='siswa'){
+        const nis=document.getElementById('loginNis').value.trim();
+        const nama=document.getElementById('loginNama').value.trim().toLowerCase();
+        user=data.students.find(s=>s.nis===nis && s.nama.toLowerCase()===nama);
+        if(user) user={...user, role:'siswa'};
+    } else {
+        const username=document.getElementById('loginUser').value.trim();
+        const password=document.getElementById('loginPass').value;
+        user=data.users.find(u=>u.username===username && u.password===password && u.role===currentPortal);
+    }
+    if(user){ currentUser=user; document.getElementById('loginPage').style.display='none'; document.getElementById('appContainer').style.display='flex'; initApp(); }
+    else { document.getElementById('loginError').style.display='block'; }
+}
+function doLogout(){ currentUser=null; currentPage='dashboard'; document.getElementById('appContainer').style.display='none'; document.getElementById('loginPage').style.display='flex'; document.getElementById('loginUser').value=''; document.getElementById('loginPass').value=''; document.getElementById('loginNis').value=''; document.getElementById('loginNama').value=''; document.getElementById('loginError').style.display='none'; destroyCharts(); }
+
+// INIT
+function initApp(){
+    const data=getData();
+    document.getElementById('schoolNameSidebar').textContent=data.settings.schoolName;
+    document.getElementById('userName').textContent=currentUser.name||currentUser.nama;
+    document.getElementById('userAvatar').textContent=(currentUser.name||currentUser.nama).charAt(0).toUpperCase();
+    const now=new Date();
+    document.getElementById('currentDate').textContent=now.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const labels={admin:'Portal Administrator',guru:'Portal Guru',siswa:'Portal Siswa'};
+    const roles={admin:'Administrator',guru:'Guru',siswa:'Siswa'};
+    document.getElementById('portalLabel').textContent=labels[currentPortal];
+    document.getElementById('userRole').textContent=roles[currentPortal];
+    buildSidebar(); navigateTo('dashboard');
+    document.getElementById('loginPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+    document.getElementById('loginUser').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+    document.getElementById('loginNama').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+    document.getElementById('loginNis').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+}
+
+function buildSidebar(){
+    const m=document.getElementById('sidebarMenu'); let h='';
+    if(currentPortal==='admin'){
+        h=`<div class="menu-category">Utama</div><div class="menu-item active" onclick="navigateTo('dashboard')"><i class="fas fa-chart-line"></i>Dashboard</div>
+        <div class="menu-category">Data Master</div><div class="menu-item" onclick="navigateTo('siswa')"><i class="fas fa-user-graduate"></i>Siswa</div>
+        <div class="menu-item" onclick="navigateTo('guru')"><i class="fas fa-chalkboard-teacher"></i>Guru</div>
+        <div class="menu-item" onclick="navigateTo('mapel')"><i class="fas fa-book"></i>Mata Pelajaran</div>
+        <div class="menu-item" onclick="navigateTo('kelas')"><i class="fas fa-users"></i>Kelas</div>
+        <div class="menu-category">Akademik</div><div class="menu-item" onclick="navigateTo('nilai')"><i class="fas fa-star"></i>Nilai</div>
+        <div class="menu-item" onclick="navigateTo('absen')"><i class="fas fa-clipboard-check"></i>Absen</div>
+        <div class="menu-item" onclick="navigateTo('rekapAbsen')"><i class="fas fa-table"></i>Rekap Absen</div>
+        <div class="menu-item" onclick="navigateTo('peringkat')"><i class="fas fa-trophy"></i>Peringkat</div>
+        <div class="menu-item" onclick="navigateTo('raport')"><i class="fas fa-file-alt"></i>Raport</div>
+        <div class="menu-category">Sistem</div><div class="menu-item" onclick="navigateTo('pengguna')"><i class="fas fa-users-cog"></i>Setting Pengguna</div>
+        <div class="menu-item" onclick="navigateTo('pengaturan')"><i class="fas fa-cog"></i>Pengaturan Sekolah</div>`;
+    } else if(currentPortal==='guru'){
+        const data=getData();
+        const teacher=data.teachers.find(t=>t.id===currentUser.teacherId);
+        const mapelGuru = teacher ? data.subjects.filter(s=>{
+            const kelasArr = s.kelas.split(',');
+            return kelasArr.some(k=>{
+                const siswa = data.students.filter(st=>st.kelas===k);
+                return siswa.length > 0;
+            });
+        }) : data.subjects;
+        h=`<div class="menu-category">Akademik - ${teacher?teacher.nama:'Guru'}</div>`;
+        h+=`<div class="menu-item active" onclick="navigateTo('guru-nilai')"><i class="fas fa-star"></i>Input Nilai</div>`;
+        h+=`<div class="menu-item" onclick="navigateTo('guru-absen')"><i class="fas fa-clipboard-check"></i>Absen</div>`;
+        h+=`<div class="menu-item" onclick="navigateTo('guru-rekap')"><i class="fas fa-table"></i>Rekap Absen</div>`;
+        h+=`<div class="menu-item" onclick="navigateTo('guru-raport')"><i class="fas fa-file-alt"></i>Cetak Raport</div>`;
+    } else {
+        h=`<div class="menu-category">Informasi Siswa</div>
+        <div class="menu-item active" onclick="navigateTo('siswa-rekap')"><i class="fas fa-table"></i>Rekap Absensi</div>
+        <div class="menu-item" onclick="navigateTo('siswa-raport')"><i class="fas fa-file-alt"></i>Raport Saya</div>`;
+    }
+    m.innerHTML=h;
+}
+
+function navigateTo(page){
+    currentPage=page;
+    document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m=>{ if(m.getAttribute('onclick')?.includes(page)) m.classList.add('active'); });
+    const titles={'dashboard':'Dashboard','siswa':'Data Siswa','guru':'Data Guru','mapel':'Mata Pelajaran','kelas':'Data Kelas',
+        'nilai':'Input Nilai','absen':'Absensi','rekapAbsen':'Rekap Absensi','peringkat':'Peringkat Siswa','raport':'Raport',
+        'pengguna':'Setting Pengguna','pengaturan':'Pengaturan Sekolah','guru-nilai':'Input Nilai','guru-absen':'Absensi',
+        'guru-rekap':'Rekap Absensi','guru-raport':'Cetak Raport','siswa-rekap':'Rekap Absensi Saya','siswa-raport':'Raport Saya'};
+    document.getElementById('pageTitle').textContent=titles[page]||'Dashboard';
+    destroyCharts(); renderPage(page);
+    if(window.innerWidth<=768){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('show'); }
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlayBg').classList.toggle('show'); }
+function destroyCharts(){ Object.values(chartStore).forEach(c=>{if(c&&c.destroy)c.destroy();}); chartStore={}; }
+
+// TOAST & MODAL
+function showToast(msg,type='success'){ const c=document.getElementById('toastContainer'); const icons={success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle'}; const colors={success:'var(--success)',error:'var(--danger)',info:'var(--info)'}; const t=document.createElement('div'); t.className=`toast toast-${type}`; t.innerHTML=`<i class="fas ${icons[type]}" style="color:${colors[type]};font-size:16px;"></i> ${msg}`; c.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3000); }
+function showModal(title,bodyHtml,footerHtml=''){ const o=document.getElementById('modalOverlay'); document.getElementById('modalContent').innerHTML=`<div class="modal-header"><h3>${title}</h3><button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-body">${bodyHtml}</div>${footerHtml?`<div class="modal-footer">${footerHtml}</div>`:''}`; o.classList.add('show'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+
+// RENDER PAGES
+function renderPage(page){
+    const area=document.getElementById('contentArea');
+    const r={'dashboard':renderDashboard,'siswa':renderSiswa,'guru':renderGuru,'mapel':renderMapel,'kelas':renderKelas,
+        'nilai':renderNilai,'absen':renderAbsen,'rekapAbsen':renderRekapAbsen,'peringkat':renderPeringkat,'raport':renderRaport,
+        'pengguna':renderPengguna,'pengaturan':renderPengaturan,'guru-nilai':renderGuruNilai,'guru-absen':renderGuruAbsen,
+        'guru-rekap':renderGuruRekap,'guru-raport':renderGuruRaport,'siswa-rekap':renderSiswaRekap,'siswa-raport':renderSiswaRaport};
+    if(r[page]) r[page](area);
+}
+
+// UTILITIES
+function formatDate(ds){ if(!ds)return '-'; const months=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; const p=ds.split('-'); return p.length===3?`${parseInt(p[2])} ${months[parseInt(p[1])-1]} ${p[0]}`:ds; }
+function formatDateImport(val){ if(!val)return ''; if(typeof val==='number'){const d=new Date((val-25569)*86400*1000); return d.toISOString().split('T')[0];} return String(val).split('T')[0]; }
+function filterTable(tid,q){ const t=document.getElementById(tid); if(!t)return; q=q.toLowerCase(); t.querySelectorAll('tbody tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';}); }
+
+// ========== DASHBOARD ==========
+function renderDashboard(area){
+    const data=getData();
+    const currentYear=data.settings.academicYear.split('/')[0];
+    const sby={}; data.students.forEach(s=>{sby[s.tahun]=(sby[s.tahun]||0)+1;});
+    const tby={}; data.teachers.forEach(t=>{tby[t.tahun]=(tby[t.tahun]||0)+1;});
+    const years=[...new Set([...Object.keys(sby),...Object.keys(tby)])].sort();
+    if(years.length===0)years.push(currentYear);
+    const today=new Date().toISOString().split('T')[0];
+    const hadirToday=data.attendance.filter(a=>a.tanggal===today&&a.status==='Hadir').length;
+    area.innerHTML=`
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-user-graduate"></i></div><div class="stat-info"><h3>${data.students.length}</h3><p>Total Siswa</p></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-chalkboard-teacher"></i></div><div class="stat-info"><h3>${data.teachers.length}</h3><p>Total Guru</p></div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-users"></i></div><div class="stat-info"><h3>${data.classes.length}</h3><p>Total Kelas</p></div></div>
+        <div class="stat-card"><div class="stat-icon cyan"><i class="fas fa-book"></i></div><div class="stat-info"><h3>${data.subjects.length}</h3><p>Total Mapel</p></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-clipboard-check"></i></div><div class="stat-info"><h3>${hadirToday}</h3><p>Hadir Hari Ini</p></div></div>
+    </div>
+    <div class="chart-grid">
+        <div class="chart-card"><h3><i class="fas fa-chart-bar" style="color:var(--primary);margin-right:8px;"></i>Jumlah Siswa Per Tahun</h3><canvas id="chartSiswa"></canvas></div>
+        <div class="chart-card"><h3><i class="fas fa-chart-bar" style="color:var(--success);margin-right:8px;"></i>Jumlah Guru Per Tahun</h3><canvas id="chartGuru"></canvas></div>
+        <div class="chart-card"><h3><i class="fas fa-chart-pie" style="color:var(--warning);margin-right:8px;"></i>Distribusi Siswa Per Kelas</h3><canvas id="chartKelas"></canvas></div>
+        <div class="chart-card"><h3><i class="fas fa-chart-pie" style="color:var(--info);margin-right:8px;"></i>Jenis Kelamin Siswa</h3><canvas id="chartGender"></canvas></div>
+    </div>`;
+    setTimeout(()=>{
+        const siswaData=years.map(y=>sby[y]||0);
+        const guruData=years.map(y=>tby[y]||0);
+        chartStore.siswa=new Chart(document.getElementById('chartSiswa'),{type:'bar',data:{labels:years,datasets:[{label:'Jumlah Siswa',data:siswaData,backgroundColor:'rgba(37,99,235,0.7)',borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+        chartStore.guru=new Chart(document.getElementById('chartGuru'),{type:'line',data:{labels:years,datasets:[{label:'Jumlah Guru',data:guruData,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.1)',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:'#16a34a'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+        const kc={}; data.students.forEach(s=>{kc[s.kelas]=(kc[s.kelas]||0)+1;});
+        const kl=Object.keys(kc), kd=Object.values(kc);
+        const colors=['#2563eb','#16a34a','#d97706','#dc2626','#0891b2','#7c3aed','#db2777','#059669'];
+        chartStore.kelas=new Chart(document.getElementById('chartKelas'),{type:'doughnut',data:{labels:kl,datasets:[{data:kd,backgroundColor:colors.slice(0,kl.length),borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{padding:15,font:{size:11}}}}}});
+        const lC=data.students.filter(s=>s.jenisKelamin==='L').length; const pC=data.students.filter(s=>s.jenisKelamin==='P').length;
+        chartStore.gender=new Chart(document.getElementById('chartGender'),{type:'doughnut',data:{labels:['Laki-laki','Perempuan'],datasets:[{data:[lC,pC],backgroundColor:['#2563eb','#db2777'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{padding:15,font:{size:11}}}}}});
+    },100);
+}
+
+// ========== SISWA ==========
+function renderSiswa(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Data Siswa (${data.students.length})</h3>
+        <div class="table-actions">
+            <input type="text" class="search-box" placeholder="Cari siswa..." oninput="filterTable('siswaTable',this.value)">
+            <button class="btn btn-success btn-sm" onclick="showImportSiswa()"><i class="fas fa-file-excel"></i> Import Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="showAddSiswa()"><i class="fas fa-plus"></i> Tambah Siswa</button>
+        </div>
+    </div><div class="table-responsive"><table id="siswaTable"><thead><tr><th>No</th><th>NIS</th><th>Nama Lengkap</th><th>TTL</th><th>Jenis Kelamin</th><th>Wali/Ortu</th><th>No Telp/WA</th><th>Kelas</th><th>Tahun</th><th>Aksi</th></tr></thead>
+    <tbody>${data.students.map((s,i)=>`<tr><td>${i+1}</td><td><strong>${s.nis}</strong></td><td>${s.nama}</td><td>${s.tempatLahir}, ${formatDate(s.tanggalLahir)}</td>
+    <td><span class="badge ${s.jenisKelamin==='L'?'badge-info':'badge-danger'}">${s.jenisKelamin==='L'?'Laki-laki':'Perempuan'}</span></td>
+    <td>${s.wali}</td><td>${s.telepon}</td><td><span class="badge badge-primary">${s.kelas}</span></td><td>${s.tahun}</td>
+    <td><button class="btn btn-warning btn-sm" onclick="showEditSiswa('${s.nis}')" title="Edit"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteSiswa('${s.nis}')" title="Hapus"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function showAddSiswa(){
+    const data=getData(); const kelasOpts=data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('');
+    showModal('Tambah Siswa Baru',`
+    <div class="form-grid">
+        <div class="form-group"><label>NIS</label><input type="text" id="fNis" placeholder="2025010"></div>
+        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="fNama" placeholder="Nama lengkap"></div>
+        <div class="form-group"><label>Tempat Lahir</label><input type="text" id="fTempat" placeholder="Kota kelahiran"></div>
+        <div class="form-group"><label>Tanggal Lahir</label><input type="date" id="fTanggal"></div>
+        <div class="form-group"><label>Jenis Kelamin</label><select id="fGender"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
+        <div class="form-group"><label>Wali/Orang Tua</label><input type="text" id="fWali" placeholder="Nama wali"></div>
+        <div class="form-group"><label>No Telepon/WA</label><input type="text" id="fTelp" placeholder="08xxxxxxxxxx"></div>
+        <div class="form-group"><label>Kelas</label><select id="fKelas">${kelasOpts}</select></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="fTahun" value="${data.settings.academicYear.split('/')[0]}"></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveSiswa()"><i class="fas fa-save"></i> Simpan</button>`);
+}
+
+function saveSiswa(editNis){
+    const data=getData();
+    const obj={
+        nis:document.getElementById('fNis').value.trim(), nama:document.getElementById('fNama').value.trim(),
+        tempatLahir:document.getElementById('fTempat').value.trim(), tanggalLahir:document.getElementById('fTanggal').value,
+        jenisKelamin:document.getElementById('fGender').value, wali:document.getElementById('fWali').value.trim(),
+        telepon:document.getElementById('fTelp').value.trim(), kelas:document.getElementById('fKelas').value,
+        tahun:document.getElementById('fTahun').value.trim()
+    };
+    if(!obj.nis||!obj.nama||!obj.tempatLahir||!obj.tanggalLahir||!obj.wali||!obj.telepon){showToast('Semua field wajib diisi!','error');return;}
+    if(editNis){ const idx=data.students.findIndex(s=>s.nis===editNis); if(idx>=0) data.students[idx]=obj; showToast('Data siswa berhasil diperbarui!'); }
+    else { if(data.students.find(s=>s.nis===obj.nis)){showToast('NIS sudah ada!','error');return;} data.students.push(obj); showToast('Siswa berhasil ditambahkan!'); }
+    saveData(data); closeModal(); renderSiswa(document.getElementById('contentArea'));
+}
+
+function showEditSiswa(nis){
+    const data=getData(); const s=data.students.find(x=>x.nis===nis); if(!s) return;
+    const kelasOptions=data.classes.map(k=>`<option value="${k.nama}" ${k.nama===s.kelas?'selected':''}>${k.nama}</option>`).join('');
+    showModal('Edit Siswa',`
+    <div class="form-grid">
+        <div class="form-group"><label>NIS</label><input type="text" id="fNis" value="${s.nis}"></div>
+        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="fNama" value="${s.nama}"></div>
+        <div class="form-group"><label>Tempat Lahir</label><input type="text" id="fTempat" value="${s.tempatLahir}"></div>
+        <div class="form-group"><label>Tanggal Lahir</label><input type="date" id="fTanggal" value="${s.tanggalLahir}"></div>
+        <div class="form-group"><label>Jenis Kelamin</label><select id="fGender"><option value="L" ${s.jenisKelamin==='L'?'selected':''}>Laki-laki</option><option value="P" ${s.jenisKelamin==='P'?'selected':''}>Perempuan</option></select></div>
+        <div class="form-group"><label>Wali/Orang Tua</label><input type="text" id="fWali" value="${s.wali}"></div>
+        <div class="form-group"><label>No Telepon/WA</label><input type="text" id="fTelp" value="${s.telepon}"></div>
+        <div class="form-group"><label>Kelas</label><select id="fKelas">${kelasOptions}</select></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="fTahun" value="${s.tahun}"></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveSiswa('${nis}')"><i class="fas fa-save"></i> Update</button>`);
+}
+
+function deleteSiswa(nis){ if(!confirm('Yakin hapus siswa ini?'))return; const data=getData(); data.students=data.students.filter(s=>s.nis!==nis); saveData(data); showToast('Siswa dihapus!'); renderSiswa(document.getElementById('contentArea')); }
+
+function showImportSiswa(){
+    showModal('Import Data Siswa dari Excel',`
+    <div class="import-area" onclick="document.getElementById('importFileSiswa').click()">
+        <i class="fas fa-cloud-upload-alt"></i><p>Klik untuk memilih file Excel (.xlsx / .xls)</p>
+        <p style="font-size:11px;color:var(--gray-400);margin-top:5px;">Kolom: NIS, Nama Lengkap, Tempat Lahir, Tanggal Lahir, Jenis Kelamin, Wali/Ortu, No Telp/WA, Kelas, Tahun</p>
+        <input type="file" id="importFileSiswa" accept=".xlsx,.xls" style="display:none" onchange="importSiswa(this)">
+    </div><div style="margin-top:15px;"><button class="btn btn-info btn-sm" onclick="downloadTemplateSiswa()"><i class="fas fa-download"></i> Download Template</button></div>`);
+}
+function downloadTemplateSiswa(){ const ws=XLSX.utils.aoa_to_sheet([['NIS','Nama Lengkap','Tempat Lahir','Tanggal Lahir','Jenis Kelamin','Wali/Ortu','No Telp/WA','Kelas','Tahun']]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Data Siswa'); XLSX.writeFile(wb,'template_siswa.xlsx'); showToast('Template diunduh!','info'); }
+function importSiswa(input){
+    const file=input.files[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(e){
+        try{
+            const wb=XLSX.read(e.target.result,{type:'binary'}); const sheet=wb.Sheets[wb.SheetNames[0]]; const rows=XLSX.utils.sheet_to_json(sheet);
+            const data=getData(); let count=0;
+            rows.forEach(row=>{
+                const nis=String(row['NIS']||'').trim();
+                if(nis&&!data.students.find(s=>s.nis===nis)){
+                    data.students.push({nis,nama:String(row['Nama Lengkap']||''),tempatLahir:String(row['Tempat Lahir']||''),tanggalLahir:formatDateImport(row['Tanggal Lahir']),jenisKelamin:String(row['Jenis Kelamin']||'L').toUpperCase(),wali:String(row['Wali/Ortu']||''),telepon:String(row['No Telp/WA']||''),kelas:String(row['Kelas']||''),tahun:String(row['Tahun']||data.settings.academicYear.split('/')[0])});
+                    count++;
+                }
+            }); saveData(data); showToast(`${count} siswa diimport!`); closeModal(); renderSiswa(document.getElementById('contentArea'));
+        } catch(err){ showToast('Gagal import: '+err.message,'error'); }
+    }; reader.readAsBinaryString(file);
+}
+
+// ========== GURU ==========
+function renderGuru(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Data Guru (${data.teachers.length})</h3>
+        <div class="table-actions">
+            <input type="text" class="search-box" placeholder="Cari guru..." oninput="filterTable('guruTable',this.value)">
+            <button class="btn btn-success btn-sm" onclick="showImportGuru()"><i class="fas fa-file-excel"></i> Import</button>
+            <button class="btn btn-primary btn-sm" onclick="showAddGuru()"><i class="fas fa-plus"></i> Tambah</button>
+        </div>
+    </div><div class="table-responsive"><table id="guruTable"><thead><tr><th>No</th><th>ID</th><th>NIGY</th><th>Nama Guru</th><th>No HP</th><th>Mapel Utama</th><th>Tahun</th><th>Aksi</th></tr></thead>
+    <tbody>${data.teachers.map((g,i)=>`<tr><td>${i+1}</td><td>${g.id}</td><td><strong>${g.nigy}</strong></td><td>${g.nama}</td><td>${g.nmrHp}</td><td><span class="badge badge-primary">${g.mapel}</span></td><td>${g.tahun}</td>
+    <td><button class="btn btn-warning btn-sm" onclick="showEditGuru('${g.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteGuru('${g.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function showAddGuru(){
+    const data=getData();
+    showModal('Tambah Guru Baru',`
+    <div class="form-grid">
+        <div class="form-group"><label>ID Guru</label><input type="text" id="gId" placeholder="T010"></div>
+        <div class="form-group"><label>NIGY</label><input type="text" id="gNigy" placeholder="G010"></div>
+        <div class="form-group"><label>Nama Guru</label><input type="text" id="gNama" placeholder="Nama lengkap"></div>
+        <div class="form-group"><label>No HP</label><input type="text" id="gHp" placeholder="08xxxxxxxxxx"></div>
+        <div class="form-group"><label>Mapel Utama</label><input type="text" id="gMapel" placeholder="Matematika"></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="gTahun" value="${data.settings.academicYear.split('/')[0]}"></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveGuru()"><i class="fas fa-save"></i> Simpan</button>`);
+}
+
+function saveGuru(editId){
+    const data=getData();
+    const obj={id:document.getElementById('gId').value.trim(),nigy:document.getElementById('gNigy').value.trim(),nama:document.getElementById('gNama').value.trim(),nmrHp:document.getElementById('gHp').value.trim(),mapel:document.getElementById('gMapel').value.trim(),tahun:document.getElementById('gTahun').value.trim()};
+    if(!obj.id||!obj.nigy||!obj.nama){showToast('Field wajib diisi!','error');return;}
+    if(editId){ const idx=data.teachers.findIndex(g=>g.id===editId); if(idx>=0) data.teachers[idx]=obj; showToast('Guru diperbarui!'); }
+    else { if(data.teachers.find(g=>g.id===obj.id)){showToast('ID sudah ada!','error');return;} data.teachers.push(obj); showToast('Guru ditambahkan!'); }
+    saveData(data); closeModal(); renderGuru(document.getElementById('contentArea'));
+}
+
+function showEditGuru(id){
+    const data=getData(); const g=data.teachers.find(x=>x.id===id); if(!g) return;
+    showModal('Edit Guru',`
+    <div class="form-grid">
+        <div class="form-group"><label>ID Guru</label><input type="text" id="gId" value="${g.id}"></div>
+        <div class="form-group"><label>NIGY</label><input type="text" id="gNigy" value="${g.nigy}"></div>
+        <div class="form-group"><label>Nama Guru</label><input type="text" id="gNama" value="${g.nama}"></div>
+        <div class="form-group"><label>No HP</label><input type="text" id="gHp" value="${g.nmrHp}"></div>
+        <div class="form-group"><label>Mapel Utama</label><input type="text" id="gMapel" value="${g.mapel}"></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="gTahun" value="${g.tahun}"></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveGuru('${id}')"><i class="fas fa-save"></i> Update</button>`);
+}
+
+function deleteGuru(id){ if(!confirm('Yakin hapus guru?'))return; const data=getData(); data.teachers=data.teachers.filter(g=>g.id!==id); saveData(data); showToast('Guru dihapus!'); renderGuru(document.getElementById('contentArea')); }
+
+function showImportGuru(){
+    showModal('Import Data Guru dari Excel',`
+    <div class="import-area" onclick="document.getElementById('importFileGuru').click()">
+        <i class="fas fa-cloud-upload-alt"></i><p>Klik pilih file Excel</p>
+        <p style="font-size:11px;color:var(--gray-400);margin-top:5px;">Kolom: ID, NIGY, Nama, No HP, Mapel, Tahun</p>
+        <input type="file" id="importFileGuru" accept=".xlsx,.xls" style="display:none" onchange="importGuru(this)">
+    </div><div style="margin-top:15px;"><button class="btn btn-info btn-sm" onclick="downloadTemplateGuru()"><i class="fas fa-download"></i> Download Template</button></div>`);
+}
+function downloadTemplateGuru(){ const ws=XLSX.utils.aoa_to_sheet([['ID','NIGY','Nama','No HP','Mapel','Tahun']]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Data Guru'); XLSX.writeFile(wb,'template_guru.xlsx'); showToast('Template diunduh!','info'); }
+function importGuru(input){
+    const file=input.files[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(e){
+        try{
+            const wb=XLSX.read(e.target.result,{type:'binary'}); const sheet=wb.Sheets[wb.SheetNames[0]]; const rows=XLSX.utils.sheet_to_json(sheet);
+            const data=getData(); let count=0;
+            rows.forEach(row=>{
+                const tid=String(row['ID']||'').trim();
+                if(tid&&!data.teachers.find(g=>g.id===tid)){
+                    data.teachers.push({id:tid,nigy:String(row['NIGY']||''),nama:String(row['Nama']||''),nmrHp:String(row['No HP']||''),mapel:String(row['Mapel']||''),tahun:String(row['Tahun']||data.settings.academicYear.split('/')[0])});
+                    count++;
+                }
+            }); saveData(data); showToast(`${count} guru diimport!`); closeModal(); renderGuru(document.getElementById('contentArea'));
+        } catch(err){ showToast('Gagal: '+err.message,'error'); }
+    }; reader.readAsBinaryString(file);
+}
+
+// ========== MAPEL ==========
+function renderMapel(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Mata Pelajaran (${data.subjects.length})</h3>
+        <div class="table-actions"><button class="btn btn-primary btn-sm" onclick="showAddMapel()"><i class="fas fa-plus"></i> Tambah Mapel</button></div>
+    </div><div class="table-responsive"><table><thead><tr><th>No</th><th>Kode</th><th>Nama Mapel</th><th>Guru Pengampu</th><th>Kelas</th><th>Aksi</th></tr></thead>
+    <tbody>${data.subjects.map((s,i)=>{
+        const guru=data.teachers.find(t=>t.id===s.guruId);
+        return `<tr><td>${i+1}</td><td><span class="badge badge-purple">${s.kode}</span></td><td><strong>${s.nama}</strong></td><td>${guru?guru.nama:'-'}</td><td>${s.kelas}</td>
+        <td><button class="btn btn-warning btn-sm" onclick="showEditMapel(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteMapel(${i})"><i class="fas fa-trash"></i></button></td></tr>`;
+    }).join('')}</tbody></table></div></div>`;
+}
+
+function showAddMapel(){
+    const data=getData();
+    const guruOpts=data.teachers.map(g=>`<option value="${g.id}">${g.nama} (${g.nigy})</option>`).join('');
+    const kelasOpts=data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('');
+    showModal('Tambah Mata Pelajaran',`
+    <div class="form-grid">
+        <div class="form-group"><label>Kode Mapel</label><input type="text" id="mKode" placeholder="MTK"></div>
+        <div class="form-group"><label>Nama Mapel</label><input type="text" id="mNama" placeholder="Matematika"></div>
+        <div class="form-group full-width"><label>Guru Pengampu</label><select id="mGuru"><option value="">Pilih Guru</option>${guruOpts}</select></div>
+        <div class="form-group full-width"><label>Kelas (bisa pilih banyak, tahan Ctrl)</label>
+            <select id="mKelas" multiple size="5">${kelasOpts}</select>
+            <small style="color:var(--gray-400);">Tahan Ctrl untuk pilih multiple kelas</small>
+        </div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveMapel()"><i class="fas fa-save"></i> Simpan</button>`);
+}
+
+function saveMapel(editIdx){
+    const kode=document.getElementById('mKode').value.trim();
+    const nama=document.getElementById('mNama').value.trim();
+    const guruId=document.getElementById('mGuru').value;
+    const kelasSelect=document.getElementById('mKelas');
+    const kelasArr=Array.from(kelasSelect.selectedOptions).map(o=>o.value);
+    const kelas=kelasArr.join(',');
+    if(!kode||!nama){showToast('Kode dan nama mapel wajib diisi!','error');return;}
+    const data=getData();
+    const obj={id:kode,nama,kode,guruId,kelas};
+    if(editIdx!==undefined){
+        data.subjects[editIdx]=obj; showToast('Mapel diperbarui!');
+    } else {
+        if(data.subjects.find(s=>s.kode===kode)){showToast('Kode mapel sudah ada!','error');return;}
+        data.subjects.push(obj); showToast('Mapel ditambahkan!');
+    }
+    saveData(data); closeModal(); renderMapel(document.getElementById('contentArea'));
+}
+
+function showEditMapel(idx){
+    const data=getData(); const s=data.subjects[idx]; if(!s) return;
+    const guruOpts=data.teachers.map(g=>`<option value="${g.id}" ${g.id===s.guruId?'selected':''}>${g.nama} (${g.nigy})</option>`).join('');
+    const kelasArr=s.kelas.split(',');
+    const kelasOpts=data.classes.map(k=>`<option value="${k.nama}" ${kelasArr.includes(k.nama)?'selected':''}>${k.nama}</option>`).join('');
+    showModal('Edit Mata Pelajaran',`
+    <div class="form-grid">
+        <div class="form-group"><label>Kode Mapel</label><input type="text" id="mKode" value="${s.kode}"></div>
+        <div class="form-group"><label>Nama Mapel</label><input type="text" id="mNama" value="${s.nama}"></div>
+        <div class="form-group full-width"><label>Guru Pengampu</label><select id="mGuru"><option value="">Pilih Guru</option>${guruOpts}</select></div>
+        <div class="form-group full-width"><label>Kelas</label><select id="mKelas" multiple size="5">${kelasOpts}</select></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveMapel(${idx})"><i class="fas fa-save"></i> Update</button>`);
+}
+
+function deleteMapel(idx){ if(!confirm('Yakin hapus mapel?'))return; const data=getData(); data.subjects.splice(idx,1); saveData(data); showToast('Mapel dihapus!'); renderMapel(document.getElementById('contentArea')); }
+
+// ========== KELAS ==========
+function renderKelas(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Data Kelas (${data.classes.length})</h3>
+        <div class="table-actions"><button class="btn btn-primary btn-sm" onclick="showAddKelas()"><i class="fas fa-plus"></i> Tambah Kelas</button></div>
+    </div><div class="table-responsive"><table><thead><tr><th>No</th><th>Kelas</th><th>Tahun</th><th>Wali Kelas</th><th>Jumlah Siswa</th><th>Aksi</th></tr></thead>
+    <tbody>${data.classes.map((k,i)=>{
+        const count=data.students.filter(s=>s.kelas===k.nama).length;
+        return `<tr><td>${i+1}</td><td><strong>${k.nama}</strong></td><td>${k.tahun}</td><td>${k.wali||'-'}</td><td>${count} siswa</td>
+        <td><button class="btn btn-warning btn-sm" onclick="showEditKelas(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteKelas(${i})"><i class="fas fa-trash"></i></button></td></tr>`;
+    }).join('')}</tbody></table></div></div>`;
+}
+
+function showAddKelas(){
+    const data=getData();
+    const waliOpts=data.teachers.map(g=>`<option value="${g.nama}">${g.nama}</option>`).join('');
+    showModal('Tambah Kelas',`
+    <div class="form-grid">
+        <div class="form-group"><label>Nama Kelas</label><input type="text" id="kNama" placeholder="X-C"></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="kTahun" value="${data.settings.academicYear.split('/')[0]}"></div>
+        <div class="form-group full-width"><label>Wali Kelas</label><select id="kWali"><option value="">Pilih Guru</option>${waliOpts}</select></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveKelas()"><i class="fas fa-save"></i> Simpan</button>`);
+}
+
+function saveKelas(editIdx){
+    const nama=document.getElementById('kNama').value.trim();
+    const tahun=document.getElementById('kTahun').value.trim();
+    const wali=document.getElementById('kWali').value;
+    if(!nama){showToast('Nama kelas wajib diisi!','error');return;}
+    const data=getData();
+    if(editIdx!==undefined){
+        const old=data.classes[editIdx].nama;
+        data.students.forEach(s=>{if(s.kelas===old)s.kelas=nama;});
+        data.subjects.forEach(sub=>{
+            const kls=sub.kelas.split(',').map(k=>k.trim());
+            if(kls.includes(old)) sub.kelas=kls.map(k=>k===old?nama:k).join(',');
+        });
+        data.classes[editIdx]={id:nama,nama,tahun,wali}; showToast('Kelas diperbarui!');
+    } else {
+        if(data.classes.find(c=>c.nama===nama)){showToast('Kelas sudah ada!','error');return;}
+        data.classes.push({id:nama,nama,tahun,wali}); showToast('Kelas ditambahkan!');
+    }
+    saveData(data); closeModal(); renderKelas(document.getElementById('contentArea'));
+}
+
+function showEditKelas(idx){
+    const data=getData(); const k=data.classes[idx]; if(!k) return;
+    const waliOpts=data.teachers.map(g=>`<option value="${g.nama}" ${g.nama===k.wali?'selected':''}>${g.nama}</option>`).join('');
+    showModal('Edit Kelas',`
+    <div class="form-grid">
+        <div class="form-group"><label>Nama Kelas</label><input type="text" id="kNama" value="${k.nama}"></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="kTahun" value="${k.tahun}"></div>
+        <div class="form-group full-width"><label>Wali Kelas</label><select id="kWali"><option value="">Pilih Guru</option>${waliOpts}</select></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveKelas(${idx})"><i class="fas fa-save"></i> Update</button>`);
+}
+
+function deleteKelas(idx){ if(!confirm('Yakin hapus kelas?'))return; const data=getData(); data.classes.splice(idx,1); saveData(data); showToast('Kelas dihapus!'); renderKelas(document.getElementById('contentArea')); }
+
+// ========== NILAI ==========
+function renderNilai(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Input Nilai Siswa</h3>
+        <div class="table-actions">
+            <select id="nKelas" onchange="renderNilaiTable()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <select id="nMapel" onchange="renderNilaiTable()" class="search-box" style="width:auto;"><option value="">Pilih Mapel</option>${data.subjects.map(s=>`<option value="${s.kode}">${s.nama}</option>`).join('')}</select>
+        </div>
+    </div><div class="table-responsive"><table id="nilaiTable"><thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Rata-rata</th><th>Aksi</th></tr></thead>
+    <tbody id="nilaiBody"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--gray-400);">Pilih kelas dan mapel</td></tr></tbody></table></div></div>`;
+}
+
+function renderNilaiTable(){
+    const kelas=document.getElementById('nKelas').value; const mapel=document.getElementById('nMapel').value;
+    if(!kelas||!mapel)return;
+    const data=getData(); const students=data.students.filter(s=>s.kelas===kelas);
+    const subject=data.subjects.find(s=>s.kode===mapel);
+    document.getElementById('nilaiBody').innerHTML=students.map((s,i)=>{
+        const existing=data.grades.find(g=>g.nis===s.nis&&g.mapel===mapel);
+        const t=existing?existing.tugas:''; const u=existing?existing.uts:''; const a=existing?existing.uas:'';
+        const avg=(t&&u&&a)?((parseInt(t)+parseInt(u)+parseInt(a))/3).toFixed(1):'-';
+        return `<tr><td>${i+1}</td><td>${s.nis}</td><td>${s.nama}</td><td><span class="badge badge-primary">${s.kelas}</span></td>
+        <td><input type="number" min="0" max="100" value="${t}" class="search-box" style="width:80px" id="tugas_${s.nis}" onchange="saveGrade('${s.nis}','${mapel}')"></td>
+        <td><input type="number" min="0" max="100" value="${u}" class="search-box" style="width:80px" id="uts_${s.nis}" onchange="saveGrade('${s.nis}','${mapel}')"></td>
+        <td><input type="number" min="0" max="100" value="${a}" class="search-box" style="width:80px" id="uas_${s.nis}" onchange="saveGrade('${s.nis}','${mapel}')"></td>
+        <td><strong>${avg}</strong></td>
+        <td><button class="btn btn-primary btn-sm" onclick="saveGrade('${s.nis}','${mapel}')"><i class="fas fa-save"></i></button></td></tr>`;
+    }).join('');
+}
+
+function saveGrade(nis,mapel){
+    const tugas=document.getElementById(`tugas_${nis}`)?.value; const uts=document.getElementById(`uts_${nis}`)?.value; const uas=document.getElementById(`uas_${nis}`)?.value;
+    if(!tugas||!uts||!uas)return;
+    const data=getData(); const idx=data.grades.findIndex(g=>g.nis===nis&&g.mapel===mapel);
+    const avg=((parseInt(tugas)+parseInt(uts)+parseInt(uas))/3).toFixed(1);
+    const entry={nis,mapel,tugas:parseInt(tugas),uts:parseInt(uts),uas:parseInt(uas),rata:parseFloat(avg)};
+    if(idx>=0) data.grades[idx]=entry; else data.grades.push(entry);
+    saveData(data); showToast('Nilai disimpan!'); renderNilaiTable();
+}
+
+// ========== ABSEN ==========
+function renderAbsen(area){
+    const data=getData(); const today=new Date().toISOString().split('T')[0];
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Absensi Harian</h3>
+        <div class="table-actions">
+            <input type="date" id="absenTanggal" value="${today}" onchange="renderAbsenTable()" class="search-box" style="width:auto;">
+            <select id="absenKelas" onchange="renderAbsenTable()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <button class="btn btn-primary btn-sm" onclick="saveAbsen()"><i class="fas fa-save"></i> Simpan</button>
+        </div>
+    </div><div class="table-responsive"><table id="absenTable"><thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>Status</th></tr></thead>
+    <tbody id="absenBody"><tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray-400);">Pilih kelas dan tanggal</td></tr></tbody></table></div></div>`;
+}
+
+function renderAbsenTable(){
+    const kelas=document.getElementById('absenKelas').value; const tanggal=document.getElementById('absenTanggal').value;
+    if(!kelas||!tanggal)return;
+    const data=getData(); const students=data.students.filter(s=>s.kelas===kelas);
+    document.getElementById('absenBody').innerHTML=students.map((s,i)=>{
+        const existing=data.attendance.find(a=>a.nis===s.nis&&a.tanggal===tanggal);
+        const status=existing?existing.status:'Hadir';
+        return `<tr><td>${i+1}</td><td>${s.nis}</td><td>${s.nama}</td>
+        <td><div class="absen-grid">
+            <div class="absen-btn ${status==='Hadir'?'hadir':''}" onclick="setStatus(this,'${s.nis}','Hadir')">Hadir</div>
+            <div class="absen-btn ${status==='Sakit'?'sakit':''}" onclick="setStatus(this,'${s.nis}','Sakit')">Sakit</div>
+            <div class="absen-btn ${status==='Izin'?'izin':''}" onclick="setStatus(this,'${s.nis}','Izin')">Izin</div>
+            <div class="absen-btn ${status==='Alpa'?'alpa':''}" onclick="setStatus(this,'${s.nis}','Alpa')">Alpa</div>
+        </div><input type="hidden" id="absenStatus_${s.nis}" value="${status}"></td></tr>`;
+    }).join('');
+}
+
+function setStatus(el,nis,status){
+    el.parentElement.querySelectorAll('.absen-btn').forEach(b=>b.className='absen-btn');
+    el.classList.add(status.toLowerCase());
+    document.getElementById(`absenStatus_${nis}`).value=status;
+}
+
+function saveAbsen(){
+    const tanggal=document.getElementById('absenTanggal').value;
+    if(!tanggal){showToast('Pilih tanggal!','error');return;}
+    const data=getData();
+    document.querySelectorAll('[id^="absenStatus_"]').forEach(inp=>{
+        const nis=inp.id.replace('absenStatus_',''); const status=inp.value;
+        const idx=data.attendance.findIndex(a=>a.nis===nis&&a.tanggal===tanggal);
+        if(idx>=0) data.attendance[idx].status=status; else data.attendance.push({nis,tanggal,status});
+    });
+    saveData(data); showToast('Absensi disimpan!');
+}
+
+// ========== REKAP ABSEN ==========
+function renderRekapAbsen(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Rekap Absensi</h3>
+        <div class="table-actions">
+            <div class="period-tabs" id="rekapTabMode" style="margin:0;">
+                <button class="period-btn active" onclick="switchRekapMode('kelas',this)">Per Kelas</button>
+                <button class="period-btn" onclick="switchRekapMode('siswa',this)">Per Siswa</button>
+            </div>
+            <select id="rkKelas" onchange="renderRekapTable()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <select id="rkSiswa" onchange="renderRekapTable()" class="search-box hidden" style="width:auto;"><option value="">Pilih Siswa</option></select>
+            <select id="rkBulan" onchange="renderRekapTable()" class="search-box" style="width:auto;"><option value="">Semua Bulan</option>
+                ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
+            <button class="btn btn-whatsapp btn-sm" onclick="forwardRekapWA()"><i class="fab fa-whatsapp"></i> Forward WA</button>
+            <button class="btn btn-info btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Cetak</button>
+        </div>
+    </div><div class="table-responsive"><table id="rekapTable"><thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>Hadir</th><th>Sakit</th><th>Izin</th><th>Alpa</th><th>% Kehadiran</th></tr></thead>
+    <tbody id="rekapBody"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--gray-400);">Pilih kelas atau siswa</td></tr></tbody></table></div></div>`;
+}
+
+function switchRekapMode(mode, btn){
+    btn.parentElement.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const kelasSel=document.getElementById('rkKelas');
+    const siswaSel=document.getElementById('rkSiswa');
+    if(mode==='siswa'){
+        kelasSel.classList.add('hidden'); siswaSel.classList.remove('hidden');
+        const data=getData();
+        siswaSel.innerHTML=`<option value="">Pilih Siswa</option>`+data.students.map(s=>`<option value="${s.nis}">${s.nama} (${s.nis}) - ${s.kelas}</option>`).join('');
+    } else {
+        kelasSel.classList.remove('hidden'); siswaSel.classList.add('hidden');
+    }
+    document.getElementById('rekapBody').innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--gray-400);">Pilih data</td></tr>';
+}
+
+function renderRekapTable(){
+    const mode=document.querySelector('#rekapTabMode .period-btn.active')?.textContent.includes('Per Siswa');
+    const bulan=document.getElementById('rkBulan').value;
+    const data=getData();
+    let filtered=[];
+    if(mode){
+        const nis=document.getElementById('rkSiswa').value;
+        if(!nis) return;
+        const student=data.students.find(s=>s.nis===nis);
+        if(!student) return;
+        filtered=[student];
+    } else {
+        const kelas=document.getElementById('rkKelas').value;
+        if(!kelas) return;
+        filtered=data.students.filter(s=>s.kelas===kelas);
+    }
+    const body=document.getElementById('rekapBody');
+    body.innerHTML=filtered.map((s,i)=>{
+        let att=data.attendance.filter(a=>a.nis===s.nis);
+        if(bulan) att=att.filter(a=>parseInt(a.tanggal.split('-')[1])===parseInt(bulan));
+        const h=att.filter(a=>a.status==='Hadir').length; const sk=att.filter(a=>a.status==='Sakit').length;
+        const iz=att.filter(a=>a.status==='Izin').length; const al=att.filter(a=>a.status==='Alpa').length;
+        const total=h+sk+iz+al; const pct=total>0?((h/total)*100).toFixed(1):0;
+        const bc=pct>=80?'badge-success':pct>=60?'badge-warning':'badge-danger';
+        return `<tr><td>${i+1}</td><td>${s.nis}</td><td>${s.nama}</td>
+        <td><span class="badge badge-success">${h}</span></td><td><span class="badge badge-warning">${sk}</span></td>
+        <td><span class="badge badge-info">${iz}</span></td><td><span class="badge badge-danger">${al}</span></td>
+        <td><span class="badge ${bc}">${pct}%</span></td></tr>`;
+    }).join('');
+}
+
+function forwardRekapWA(){
+    const bulan=document.getElementById('rkBulan').value;
+    const mode=document.querySelector('#rekapTabMode .period-btn.active')?.textContent.includes('Per Siswa');
+    const data=getData();
+    let students=[];
+    if(mode){
+        const nis=document.getElementById('rkSiswa').value;
+        if(!nis){showToast('Pilih siswa!','error');return;}
+        const s=data.students.find(x=>x.nis===nis); if(s) students=[s];
+    } else {
+        const kelas=document.getElementById('rkKelas').value;
+        if(!kelas){showToast('Pilih kelas!','error');return;}
+        students=data.students.filter(s=>s.kelas===kelas);
+    }
+    let text=`*Rekap Absensi - ${data.settings.schoolName}*\n`;
+    text+=`Periode: ${bulan?['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][bulan-1]+' '+data.settings.academicYear.split('/')[0]:'Semua Bulan '+data.settings.academicYear.split('/')[0]}\n\n`;
+    students.forEach(s=>{
+        let att=data.attendance.filter(a=>a.nis===s.nis);
+        if(bulan) att=att.filter(a=>parseInt(a.tanggal.split('-')[1])===parseInt(bulan));
+        const h=att.filter(a=>a.status==='Hadir').length; const sk=att.filter(a=>a.status==='Sakit').length;
+        const iz=att.filter(a=>a.status==='Izin').length; const al=att.filter(a=>a.status==='Alpa').length;
+        const total=h+sk+iz+al; const pct=total>0?((h/total)*100).toFixed(1):0;
+        text+=`_${s.nama} (${s.kelas})_\nHadir: ${h} | Sakit: ${sk} | Izin: ${iz} | Alpa: ${al} | Kehadiran: ${pct}%\n\n`;
+    });
+    // Find a student or teacher phone number to forward to
+    let phone = students[0]?.telepon || '';
+    // Remove non-numeric and ensure it starts with country code
+    phone = phone.replace(/\D/g, '');
+    if(phone.startsWith('0')) phone = '62' + phone.substring(1);
+    const encoded = encodeURIComponent(text);
+    const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+    window.open(url, '_blank');
+    showToast('Membuka WhatsApp...','info');
+}
+
+// ========== PERINGKAT ==========
+function renderPeringkat(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Peringkat Siswa</h3>
+        <div class="table-actions">
+            <select id="pkKelas" onchange="renderPeringkatTable()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+        </div>
+    </div><div id="peringkatBody" style="padding:20px;"><div class="empty-state"><i class="fas fa-trophy"></i><p>Pilih kelas</p></div></div></div>`;
+}
+
+function renderPeringkatTable(){
+    const kelas=document.getElementById('pkKelas').value; if(!kelas)return;
+    const data=getData(); const students=data.students.filter(s=>s.kelas===kelas);
+    const ranked=students.map(s=>{
+        const grades=data.grades.filter(g=>g.nis===s.nis);
+        const avg=grades.length>0?(grades.reduce((sum,g)=>sum+g.rata,0)/grades.length).toFixed(1):0;
+        return {...s,avg:parseFloat(avg)};
+    }).sort((a,b)=>b.avg-a.avg);
+    document.getElementById('peringkatBody').innerHTML=ranked.map((s,i)=>`
+    <div class="peringkat-row">
+        <div class="peringkat-num">${i+1}</div>
+        <div style="flex:1;"><div style="font-weight:700;font-size:14px;">${s.nama}</div><div style="font-size:12px;color:var(--gray-500);">NIS: ${s.nis}</div></div>
+        <div style="text-align:right;"><div style="font-size:20px;font-weight:800;color:var(--primary);">${s.avg}</div><div style="font-size:11px;color:var(--gray-500);">Rata-rata</div></div>
+    </div>`).join('');
+}
+
+// ========== RAPORT ==========
+function renderRaport(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Raport Siswa</h3>
+        <div class="table-actions">
+            <select id="rpKelas" onchange="renderRaportSelect()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${data.classes.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <select id="rpSiswa" onchange="renderRaportView()" class="search-box" style="width:auto;"><option value="">Pilih Siswa</option></select>
+            <button class="btn btn-info btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Cetak</button>
+        </div>
+    </div><div id="raportBody"><div class="empty-state"><i class="fas fa-file-alt"></i><p>Pilih kelas dan siswa</p></div></div></div>`;
+}
+
+function renderRaportSelect(){
+    const kelas=document.getElementById('rpKelas').value; const sel=document.getElementById('rpSiswa');
+    const data=getData();
+    sel.innerHTML=`<option value="">Pilih Siswa</option>`+data.students.filter(s=>s.kelas===kelas).map(s=>`<option value="${s.nis}">${s.nama} (${s.nis})</option>`).join('');
+}
+
+function renderRaportView(){
+    const nis=document.getElementById('rpSiswa').value; if(!nis)return;
+    const data=getData(); const student=data.students.find(s=>s.nis===nis); if(!student)return;
+    const grades=data.grades.filter(g=>g.nis===nis);
+    const att=data.attendance.filter(a=>a.nis===nis);
+    const h=att.filter(a=>a.status==='Hadir').length; const sk=att.filter(a=>a.status==='Sakit').length;
+    const iz=att.filter(a=>a.status==='Izin').length; const al=att.filter(a=>a.status==='Alpa').length;
+    const kelas=data.classes.find(c=>c.nama===student.kelas);
+    document.getElementById('raportBody').innerHTML=`
+    <div class="raport-card">
+        <div class="raport-header">
+            <h2>${data.settings.schoolName}</h2><p>${data.settings.schoolAddress}</p>
+            <p style="margin-top:10px;"><strong>RAPORT SISWA</strong></p>
+            <p>Tahun Ajaran: ${data.settings.academicYear} | Semester: ${data.settings.semester}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;font-size:13px;">
+            <div><strong>Nama:</strong> ${student.nama}</div><div><strong>NIS:</strong> ${student.nis}</div>
+            <div><strong>Kelas:</strong> ${student.kelas}</div><div><strong>Wali Kelas:</strong> ${kelas?kelas.wali:'-'}</div>
+        </div>
+        <h3 style="margin-bottom:10px;font-size:14px;">Nilai Akademik</h3>
+        <table style="margin-bottom:20px;">
+            <thead><tr><th>Mata Pelajaran</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Rata-rata</th><th>Predikat</th></tr></thead>
+            <tbody>${grades.length>0?grades.map(g=>{
+                const pred=g.rata>=85?'A':g.rata>=70?'B':g.rata>=55?'C':'D';
+                const sub=data.subjects.find(s=>s.kode===g.mapel);
+                return `<tr><td>${sub?sub.nama:g.mapel}</td><td>${g.tugas}</td><td>${g.uts}</td><td>${g.uas}</td><td><strong>${g.rata}</strong></td><td><span class="badge ${pred==='A'?'badge-success':pred==='B'?'badge-primary':pred==='C'?'badge-warning':'badge-danger'}">${pred}</span></td></tr>`;
+            }).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">Belum ada data nilai</td></tr>'}</tbody>
+        </table>
+        <h3 style="margin-bottom:10px;font-size:14px;">Absensi</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="background:var(--success-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--success);">${h}</strong><br><small>Hadir</small></div>
+            <div style="background:var(--warning-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--warning);">${sk}</strong><br><small>Sakit</small></div>
+            <div style="background:var(--info-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--info);">${iz}</strong><br><small>Izin</small></div>
+            <div style="background:var(--danger-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--danger);">${al}</strong><br><small>Alpa</small></div>
+        </div>
+    </div>`;
+}
+
+// ========== PENGGUNA ==========
+function renderPengguna(area){
+    const data=getData();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3>Setting Pengguna (${data.users.length})</h3>
+        <div class="table-actions"><button class="btn btn-primary btn-sm" onclick="showAddUser()"><i class="fas fa-plus"></i> Tambah</button></div>
+    </div><div class="table-responsive"><table><thead><tr><th>No</th><th>Username</th><th>Nama</th><th>Role</th><th>Aksi</th></tr></thead>
+    <tbody>${data.users.map((u,i)=>`<tr><td>${i+1}</td><td><strong>${u.username}</strong></td><td>${u.name}</td>
+    <td><span class="badge ${u.role==='admin'?'badge-danger':u.role==='guru'?'badge-warning':'badge-info'}">${u.role}</span></td>
+    <td><button class="btn btn-warning btn-sm" onclick="showEditUser('${u.id}')"><i class="fas fa-edit"></i></button>${u.id!=='admin'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>`:''}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function showAddUser(){
+    showModal('Tambah Pengguna',`
+    <div class="form-grid">
+        <div class="form-group"><label>Username</label><input type="text" id="uUsername" placeholder="Username"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="uPassword" placeholder="Password"></div>
+        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="uNama" placeholder="Nama"></div>
+        <div class="form-group"><label>Role</label><select id="uRole"><option value="admin">Administrator</option><option value="guru">Guru</option><option value="siswa">Siswa</option></select></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveUser()"><i class="fas fa-save"></i> Simpan</button>`);
+}
+
+function saveUser(editId){
+    const username=document.getElementById('uUsername').value.trim(); const password=document.getElementById('uPassword').value;
+    const nama=document.getElementById('uNama').value.trim(); const role=document.getElementById('uRole').value;
+    if(!username||!nama){showToast('Username dan nama wajib diisi!','error');return;}
+    const data=getData();
+    if(editId){
+        const idx=data.users.findIndex(u=>u.id===editId);
+        if(idx>=0){ data.users[idx].username=username; data.users[idx].name=nama; data.users[idx].role=role; if(password)data.users[idx].password=password; showToast('Pengguna diperbarui!'); }
+    } else {
+        if(data.users.find(u=>u.username===username)){showToast('Username sudah ada!','error');return;}
+        data.users.push({id:'user_'+Date.now(),username,password:password||'123456',name:nama,role}); showToast('Pengguna ditambahkan!');
+    }
+    saveData(data); closeModal(); renderPengguna(document.getElementById('contentArea'));
+}
+
+function showEditUser(id){
+    const data=getData(); const u=data.users.find(x=>x.id===id); if(!u)return;
+    showModal('Edit Pengguna',`
+    <div class="form-grid">
+        <div class="form-group"><label>Username</label><input type="text" id="uUsername" value="${u.username}"></div>
+        <div class="form-group"><label>Password (kosongkan jika tidak diubah)</label><input type="password" id="uPassword" placeholder="Password baru"></div>
+        <div class="form-group"><label>Nama</label><input type="text" id="uNama" value="${u.name}"></div>
+        <div class="form-group"><label>Role</label><select id="uRole"><option value="admin" ${u.role==='admin'?'selected':''}>Admin</option><option value="guru" ${u.role==='guru'?'selected':''}>Guru</option><option value="siswa" ${u.role==='siswa'?'selected':''}>Siswa</option></select></div>
+    </div>`,`<button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveUser('${id}')"><i class="fas fa-save"></i> Update</button>`);
+}
+
+function deleteUser(id){ if(!confirm('Yakin hapus?'))return; const data=getData(); data.users=data.users.filter(u=>u.id!==id); saveData(data); showToast('Pengguna dihapus!'); renderPengguna(document.getElementById('contentArea')); }
+
+// ========== PENGATURAN ==========
+function renderPengaturan(area){
+    const data=getData(); const s=data.settings;
+    area.innerHTML=`
+    <div class="table-container" style="padding:25px;"><h3 style="margin-bottom:20px;"><i class="fas fa-cog" style="color:var(--primary);margin-right:8px;"></i>Pengaturan Sekolah</h3>
+    <div class="form-grid">
+        <div class="form-group full-width"><label>Nama Sekolah</label><input type="text" id="setNama" value="${s.schoolName}"></div>
+        <div class="form-group full-width"><label>Alamat</label><input type="text" id="setAlamat" value="${s.schoolAddress}"></div>
+        <div class="form-group"><label>Telepon</label><input type="text" id="setTelp" value="${s.schoolPhone}"></div>
+        <div class="form-group"><label>Email</label><input type="text" id="setEmail" value="${s.schoolEmail}"></div>
+        <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="setTahun" value="${s.academicYear}"></div>
+        <div class="form-group"><label>Semester</label><select id="setSemester"><option value="Ganjil" ${s.semester==='Ganjil'?'selected':''}>Ganjil</option><option value="Genap" ${s.semester==='Genap'?'selected':''}>Genap</option></select></div>
+    </div>
+    <div style="margin-top:20px;"><button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Simpan</button><button class="btn btn-danger" onclick="if(confirm('Reset semua data?')){localStorage.removeItem('sisData');location.reload();}" style="margin-left:10px;"><i class="fas fa-redo"></i> Reset Data</button></div></div>`;
+}
+
+function saveSettings(){
+    const data=getData();
+    data.settings.schoolName=document.getElementById('setNama').value; data.settings.schoolAddress=document.getElementById('setAlamat').value;
+    data.settings.schoolPhone=document.getElementById('setTelp').value; data.settings.schoolEmail=document.getElementById('setEmail').value;
+    data.settings.academicYear=document.getElementById('setTahun').value; data.settings.semester=document.getElementById('setSemester').value;
+    saveData(data); document.getElementById('schoolNameSidebar').textContent=data.settings.schoolName; showToast('Pengaturan disimpan!');
+}
+
+// ========== GURU PORTAL ==========
+function getGuruSubjects(){
+    const data=getData();
+    const teacher=data.teachers.find(t=>t.id===currentUser.teacherId);
+    if(!teacher) return data.subjects;
+    return data.subjects.filter(s=>{
+        const kelasArr=s.kelas.split(',');
+        return kelasArr.some(k=>data.students.filter(st=>st.kelas===k).length>0);
+    });
+}
+
+function getGuruClasses(){
+    const data=getData();
+    const teacher=data.teachers.find(t=>t.id===currentUser.teacherId);
+    if(!teacher) return data.classes;
+    const kls=new Set();
+    data.subjects.forEach(s=>{ if(s.guruId===teacher.id) s.kelas.split(',').forEach(k=>kls.add(k.trim())); });
+    return data.classes.filter(c=>kls.has(c.nama));
+}
+
+function renderGuruNilai(area){
+    const guruClasses=getGuruClasses();
+    const guruSubjects=getGuruSubjects();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3><i class="fas fa-star" style="color:var(--warning);margin-right:8px;"></i>Input Nilai - ${currentUser.name}</h3>
+        <div class="table-actions">
+            <select id="nKelas" onchange="renderGuruNilaiTable()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${guruClasses.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <select id="nMapel" onchange="renderGuruNilaiTable()" class="search-box" style="width:auto;"><option value="">Pilih Mapel</option>${guruSubjects.map(s=>`<option value="${s.kode}">${s.nama}</option>`).join('')}</select>
+        </div>
+    </div><div class="table-responsive"><table><thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Rata-rata</th><th>Aksi</th></tr></thead>
+    <tbody id="nilaiBody"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--gray-400);">Pilih kelas dan mapel yang diajarkan</td></tr></tbody></table></div></div>`;
+}
+
+function renderGuruNilaiTable(){
+    const kelas=document.getElementById('nKelas').value; const mapel=document.getElementById('nMapel').value;
+    if(!kelas||!mapel)return;
+    const data=getData(); const students=data.students.filter(s=>s.kelas===kelas);
+    document.getElementById('nilaiBody').innerHTML=students.map((s,i)=>{
+        const existing=data.grades.find(g=>g.nis===s.nis&&g.mapel===mapel);
+        const t=existing?existing.tugas:''; const u=existing?existing.uts:''; const a=existing?existing.uas:'';
+        const avg=(t&&u&&a)?((parseInt(t)+parseInt(u)+parseInt(a))/3).toFixed(1):'-';
+        return `<tr><td>${i+1}</td><td>${s.nis}</td><td>${s.nama}</td><td><span class="badge badge-primary">${s.kelas}</span></td>
+        <td><input type="number" min="0" max="100" value="${t}" class="search-box" style="width:80px" id="tugas_${s.nis}" onchange="saveGrade('${s.nis}','${mapel}')"></td>
+        <td><input type="number" min="0" max="100" value="${u}" class="search-box" style="width:80px" id="uts_${s.nis}" onchange="saveGrade('${s.nis}','${mapel}')"></td>
+        <td><input type="number" min="0" max="100" value="${a}" class="search-box" style="width:80px" id="uas_${s.nis}" onchange="saveGrade('${s.nis}','${mapel}')"></td>
+        <td><strong>${avg}</strong></td><td><button class="btn btn-primary btn-sm" onclick="saveGrade('${s.nis}','${mapel}')"><i class="fas fa-save"></i></button></td></tr>`;
+    }).join('');
+}
+
+function renderGuruAbsen(area){
+    const guruClasses=getGuruClasses();
+    const today=new Date().toISOString().split('T')[0];
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3><i class="fas fa-clipboard-check" style="color:var(--success);margin-right:8px;"></i>Absensi - ${currentUser.name}</h3>
+        <div class="table-actions">
+            <input type="date" id="absenTanggal" value="${today}" onchange="renderGuruAbsenTable()" class="search-box" style="width:auto;">
+            <select id="absenKelas" onchange="renderGuruAbsenTable()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${guruClasses.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <button class="btn btn-primary btn-sm" onclick="saveAbsen()"><i class="fas fa-save"></i> Simpan</button>
+        </div>
+    </div><div class="table-responsive"><table><thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>Status</th></tr></thead>
+    <tbody id="absenBody"><tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray-400);">Pilih kelas</td></tr></tbody></table></div></div>`;
+}
+
+function renderGuruAbsenTable(){
+    const kelas=document.getElementById('absenKelas').value; const tanggal=document.getElementById('absenTanggal').value;
+    if(!kelas||!tanggal)return;
+    const data=getData(); const students=data.students.filter(s=>s.kelas===kelas);
+    document.getElementById('absenBody').innerHTML=students.map((s,i)=>{
+        const existing=data.attendance.find(a=>a.nis===s.nis&&a.tanggal===tanggal);
+        const status=existing?existing.status:'Hadir';
+        return `<tr><td>${i+1}</td><td>${s.nis}</td><td>${s.nama}</td>
+        <td><div class="absen-grid"><div class="absen-btn ${status==='Hadir'?'hadir':''}" onclick="setStatus(this,'${s.nis}','Hadir')">Hadir</div>
+        <div class="absen-btn ${status==='Sakit'?'sakit':''}" onclick="setStatus(this,'${s.nis}','Sakit')">Sakit</div>
+        <div class="absen-btn ${status==='Izin'?'izin':''}" onclick="setStatus(this,'${s.nis}','Izin')">Izin</div>
+        <div class="absen-btn ${status==='Alpa'?'alpa':''}" onclick="setStatus(this,'${s.nis}','Alpa')">Alpa</div></div>
+        <input type="hidden" id="absenStatus_${s.nis}" value="${status}"></td></tr>`;
+    }).join('');
+}
+
+function renderGuruRekap(area){ renderRekapAbsen(area); }
+
+function renderGuruRaport(area){
+    const guruClasses=getGuruClasses();
+    area.innerHTML=`
+    <div class="table-container"><div class="table-header">
+        <h3><i class="fas fa-file-alt" style="color:var(--purple);margin-right:8px;"></i>Cetak Raport Per Siswa</h3>
+        <div class="table-actions">
+            <select id="rpKelas" onchange="renderGuruRaportSelect()" class="search-box" style="width:auto;"><option value="">Pilih Kelas</option>${guruClasses.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('')}</select>
+            <select id="rpSiswa" onchange="renderGuruRaportView()" class="search-box" style="width:auto;"><option value="">Pilih Siswa</option></select>
+            <button class="btn btn-info btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Cetak</button>
+        </div>
+    </div><div id="raportBody"><div class="empty-state"><i class="fas fa-file-alt"></i><p>Pilih kelas dan siswa untuk mencetak raport</p></div></div></div>`;
+}
+
+function renderGuruRaportSelect(){
+    const kelas=document.getElementById('rpKelas').value; const sel=document.getElementById('rpSiswa');
+    const data=getData();
+    sel.innerHTML=`<option value="">Pilih Siswa</option>`+data.students.filter(s=>s.kelas===kelas).map(s=>`<option value="${s.nis}">${s.nama} (${s.nis})</option>`).join('');
+}
+
+function renderGuruRaportView(){
+    const nis=document.getElementById('rpSiswa').value; if(!nis)return;
+    const data=getData(); const student=data.students.find(s=>s.nis===nis); if(!student)return;
+    const grades=data.grades.filter(g=>g.nis===nis);
+    const att=data.attendance.filter(a=>a.nis===nis);
+    const h=att.filter(a=>a.status==='Hadir').length; const sk=att.filter(a=>a.status==='Sakit').length;
+    const iz=att.filter(a=>a.status==='Izin').length; const al=att.filter(a=>a.status==='Alpa').length;
+    const kelas=data.classes.find(c=>c.nama===student.kelas);
+    const teacher=data.teachers.find(t=>t.id===currentUser.teacherId);
+    document.getElementById('raportBody').innerHTML=`
+    <div class="raport-card">
+        <div class="raport-header">
+            <h2>${data.settings.schoolName}</h2><p>${data.settings.schoolAddress}</p>
+            <p style="margin-top:10px;"><strong>RAPORT SISWA</strong></p>
+            <p>Tahun Ajaran: ${data.settings.academicYear} | Semester: ${data.settings.semester}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;font-size:13px;">
+            <div><strong>Nama:</strong> ${student.nama}</div><div><strong>NIS:</strong> ${student.nis}</div>
+            <div><strong>Kelas:</strong> ${student.kelas}</div><div><strong>Wali Kelas:</strong> ${kelas?kelas.wali:'-'}</div>
+        </div>
+        <h3 style="margin-bottom:10px;font-size:14px;">Nilai Akademik</h3>
+        <table style="margin-bottom:20px;">
+            <thead><tr><th>Mata Pelajaran</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Rata-rata</th><th>Predikat</th></tr></thead>
+            <tbody>${grades.length>0?grades.map(g=>{
+                const pred=g.rata>=85?'A':g.rata>=70?'B':g.rata>=55?'C':'D';
+                const sub=data.subjects.find(s=>s.kode===g.mapel);
+                return `<tr><td>${sub?sub.nama:g.mapel}</td><td>${g.tugas}</td><td>${g.uts}</td><td>${g.uas}</td><td><strong>${g.rata}</strong></td><td><span class="badge ${pred==='A'?'badge-success':pred==='B'?'badge-primary':pred==='C'?'badge-warning':'badge-danger'}">${pred}</span></td></tr>`;
+            }).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">Belum ada data nilai</td></tr>'}</tbody>
+        </table>
+        <h3 style="margin-bottom:10px;font-size:14px;">Absensi</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="background:var(--success-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--success);">${h}</strong><br><small>Hadir</small></div>
+            <div style="background:var(--warning-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--warning);">${sk}</strong><br><small>Sakit</small></div>
+            <div style="background:var(--info-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--info);">${iz}</strong><br><small>Izin</small></div>
+            <div style="background:var(--danger-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--danger);">${al}</strong><br><small>Alpa</small></div>
+        </div>
+        ${teacher?`<div style="margin-top:30px;text-align:right;font-size:13px;">
+            <p>Dicetak oleh: <strong>${teacher.nama}</strong></p><p>Tanggal: ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
+        </div>`:''}
+    </div>`;
+}
+
+// ========== SISWA PORTAL ==========
+function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+
+function renderSiswaRekap(area){
+    const nis=currentUser.nis||''; const data=getData();
+    const student=data.students.find(s=>s.nis===nis);
+    area.innerHTML=`
+    <div style="margin-bottom:20px;">
+        <h3 style="margin-bottom:5px;">Rekap Absensi: ${student?student.nama:nis}</h3>
+        <p style="color:var(--gray-500);font-size:13px;">NIS: ${nis} | Kelas: ${student?student.kelas:'-'}</p>
+    </div>
+    <div class="period-tabs">
+        <button class="period-btn active" onclick="renderSiswaRekapPeriode('minggu',this)">Minggu Ini</button>
+        <button class="period-btn" onclick="renderSiswaRekapPeriode('bulan',this)">Bulan Ini</button>
+        <button class="period-btn" onclick="renderSiswaRekapPeriode('semester',this)">1 Semester</button>
+        <button class="period-btn" onclick="renderSiswaRekapPeriode('tahun',this)">1 Tahun</button>
+    </div>
+    <div id="siswaRekapContent">
+        <div class="stats-grid" id="siswaRekapStats"></div>
+        <div class="table-container">
+            <div class="table-header"><h3>Detail Absensi</h3><button class="btn btn-info btn-sm no-print" onclick="window.print()"><i class="fas fa-print"></i> Cetak</button></div>
+            <div class="table-responsive"><table><thead><tr><th>No</th><th>Tanggal</th><th>Hari</th><th>Status</th></tr></thead>
+            <tbody id="siswaRekapBody"></tbody></table></div>
+        </div>
+    </div>`;
+    renderSiswaRekapPeriode('minggu', document.querySelector('.period-btn.active'));
+}
+
+function renderSiswaRekapPeriode(periode, btn){
+    if(btn){ btn.parentElement.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+    const nis=currentUser.nis||''; const data=getData();
+    const today=new Date(); let startDate, endDate, label;
+    const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const days=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    
+    if(periode==='minggu'){
+        const dayOfWeek=today.getDay(); const diff=today.getDate()-dayOfWeek+(dayOfWeek===0?-6:1);
+        startDate=new Date(today); startDate.setDate(diff); startDate.setHours(0,0,0,0);
+        endDate=new Date(startDate); endDate.setDate(startDate.getDate()+6);
+        label=`Minggu ${getWeekNumber(today)} - ${months[today.getMonth()]} ${today.getFullYear()}`;
+    } else if(periode==='bulan'){
+        startDate=new Date(today.getFullYear(),today.getMonth(),1);
+        endDate=new Date(today.getFullYear(),today.getMonth()+1,0);
+        label=`${months[today.getMonth()]} ${today.getFullYear()}`;
+    } else if(periode==='semester'){
+        const sem=data.settings.semester==='Ganjil'?{m:6}:{m:0};
+        startDate=new Date(today.getFullYear(),sem.m,1);
+        endDate=new Date(today.getFullYear(),sem.m+6,0);
+        label=`Semester ${data.settings.semester} ${data.settings.academicYear}`;
+    } else {
+        startDate=new Date(today.getFullYear()-1,today.getMonth(),today.getDate());
+        endDate=new Date(today);
+        label=`${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()-1} - ${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+    }
+    
+    const startStr=startDate.toISOString().split('T')[0]; const endStr=endDate.toISOString().split('T')[0];
+    let filtered=data.attendance.filter(a=>a.nis===nis && a.tanggal>=startStr && a.tanggal<=endStr);
+    filtered.sort((a,b)=>a.tanggal.localeCompare(b.tanggal));
+    
+    const h=filtered.filter(a=>a.status==='Hadir').length; const sk=filtered.filter(a=>a.status==='Sakit').length;
+    const iz=filtered.filter(a=>a.status==='Izin').length; const al=filtered.filter(a=>a.status==='Alpa').length;
+    const total=h+sk+iz+al; const pct=total>0?((h/total)*100).toFixed(1):0;
+    
+    document.getElementById('siswaRekapStats').innerHTML=`
+    <div style="background:var(--gray-50);border-radius:12px;padding:15px;margin-bottom:15px;grid-column:span 4;">
+        <strong style="font-size:14px;">Periode: ${label}</strong>
+    </div>
+    <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check"></i></div><div class="stat-info"><h3>${h}</h3><p>Hadir</p></div></div>
+    <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-thermometer-half"></i></div><div class="stat-info"><h3>${sk}</h3><p>Sakit</p></div></div>
+    <div class="stat-card"><div class="stat-icon cyan"><i class="fas fa-envelope"></i></div><div class="stat-info"><h3>${iz}</h3><p>Izin</p></div></div>
+    <div class="stat-card"><div class="stat-icon red"><i class="fas fa-times"></i></div><div class="stat-info"><h3>${al}</h3><p>Alpa</p></div></div>
+    <div style="grid-column:span 4;background:var(--primary-light);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:36px;font-weight:800;color:var(--primary);">${pct}%</div><div style="font-size:14px;color:var(--gray-600);">Persentase Kehadiran</div>
+    </div>`;
+    
+    document.getElementById('siswaRekapBody').innerHTML=filtered.length>0?filtered.map((a,i)=>{
+        const d=new Date(a.tanggal);
+        return `<tr><td>${i+1}</td><td>${formatDate(a.tanggal)}</td><td>${days[d.getDay()]}</td>
+        <td><span class="badge ${a.status==='Hadir'?'badge-success':a.status==='Sakit'?'badge-warning':a.status==='Izin'?'badge-info':'badge-danger'}">${a.status}</span></td></tr>`;
+    }).join(''):'<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray-400);">Tidak ada data absensi untuk periode ini</td></tr>';
+}
+
+function renderSiswaRaport(area){
+    const nis=currentUser.nis||''; const data=getData();
+    const student=data.students.find(s=>s.nis===nis);
+    if(!student){ area.innerHTML='<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Data siswa tidak ditemukan</p></div>'; return; }
+    // Auto-load grades for all subjects taught to this student's class
+    const kelas=student.kelas;
+    const subjectsForClass=data.subjects.filter(s=>s.kelas.split(',').map(k=>k.trim()).includes(kelas));
+    
+    // Auto-fill grades if not exist yet (create default entries)
+    let gradesChanged=false;
+    subjectsForClass.forEach(sub=>{
+        const existing=data.grades.find(g=>g.nis===nis&&g.mapel===sub.kode);
+        if(!existing){
+            data.grades.push({nis:nis,mapel:sub.kode,tugas:0,uts:0,uas:0,rata:0});
+            gradesChanged=true;
+        }
+    });
+    if(gradesChanged) saveData(data);
+    
+    const grades=data.grades.filter(g=>g.nis===nis);
+    const att=data.attendance.filter(a=>a.nis===nis);
+    const h=att.filter(a=>a.status==='Hadir').length; const sk=att.filter(a=>a.status==='Sakit').length;
+    const iz=att.filter(a=>a.status==='Izin').length; const al=att.filter(a=>a.status==='Alpa').length;
+    const kelasData=data.classes.find(c=>c.nama===kelas);
+    
+    area.innerHTML=`
+    <div style="margin-bottom:15px;" class="no-print">
+        <h3 style="margin-bottom:5px;">Raport - ${student.nama}</h3>
+        <p style="color:var(--gray-500);font-size:13px;">NIS: ${nis} | Kelas: ${kelas}</p>
+    </div>
+    <div class="raport-card" id="printRaport">
+        <div class="raport-header">
+            <h2>${data.settings.schoolName}</h2><p>${data.settings.schoolAddress}</p>
+            <p style="margin-top:10px;"><strong>RAPORT SISWA</strong></p>
+            <p>Tahun Ajaran: ${data.settings.academicYear} | Semester: ${data.settings.semester}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;font-size:13px;">
+            <div><strong>Nama:</strong> ${student.nama}</div><div><strong>NIS:</strong> ${student.nis}</div>
+            <div><strong>Kelas:</strong> ${kelas}</div><div><strong>Wali Kelas:</strong> ${kelasData?kelasData.wali:'-'}</div>
+        </div>
+        <h3 style="margin-bottom:10px;font-size:14px;">Nilai Akademik - ${kelas}</h3>
+        <table style="margin-bottom:20px;">
+            <thead><tr><th>No</th><th>Mata Pelajaran</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Rata-rata</th><th>Predikat</th><th>Keterangan</th></tr></thead>
+            <tbody>${grades.length>0?grades.map((g,i)=>{
+                const sub=data.subjects.find(s=>s.kode===g.mapel);
+                const pred=g.rata>=85?'A':g.rata>=70?'B':g.rata>=55?'C':'D';
+                const ket=g.rata>=70?'Tuntas':'Belum Tuntas';
+                return `<tr><td>${i+1}</td><td>${sub?sub.nama:g.mapel}</td><td>${g.tugas}</td><td>${g.uts}</td><td>${g.uas}</td><td><strong>${g.rata}</strong></td><td><span class="badge ${pred==='A'?'badge-success':pred==='B'?'badge-primary':pred==='C'?'badge-warning':'badge-danger'}">${pred}</span></td><td><span class="badge ${g.rata>=70?'badge-success':'badge-danger'}">${ket}</span></td></tr>`;
+            }).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">Belum ada data nilai</td></tr>'}</tbody>
+        </table>
+        <h3 style="margin-bottom:10px;font-size:14px;">Absensi</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="background:var(--success-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--success);">${h}</strong><br><small>Hadir</small></div>
+            <div style="background:var(--warning-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--warning);">${sk}</strong><br><small>Sakit</small></div>
+            <div style="background:var(--info-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--info);">${iz}</strong><br><small>Izin</small></div>
+            <div style="background:var(--danger-light);padding:15px;border-radius:10px;text-align:center;"><strong style="font-size:24px;color:var(--danger);">${al}</strong><br><small>Alpa</small></div>
+        </div>
+        <div style="margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:30px;font-size:13px;">
+            <div style="text-align:center;"><p>Orang Tua/Wali</p><br><br><br><p style="border-top:1px solid #333;display:inline-block;padding-top:5px;">___________________</p></div>
+            <div style="text-align:center;"><p>Wali Kelas</p><br><br><br><p style="border-top:1px solid #333;display:inline-block;padding-top:5px;">${kelasData?kelasData.wali:'___________________'}</p></div>
+        </div>
+    </div>
+    <div class="no-print" style="margin-top:15px;">
+        <button class="btn btn-info" onclick="window.print()"><i class="fas fa-print"></i> Cetak Raport</button>
+    </div>`;
+}
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+</body>
+</html>
